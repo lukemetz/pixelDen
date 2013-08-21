@@ -11,3 +11,13 @@
 *.lai
 *.la
 *.a
+
+
+# Cmake
+CMakeFiles/
+Makefile
+*.cmake
+CMakeCache.txt
+
+# You Complete Me
+*.pyc
