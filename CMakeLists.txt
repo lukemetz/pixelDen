@@ -4,8 +4,9 @@ add_subdirectory("thirdParty/bandit/")
 
 project (pixelDen)
 
-aux_source_directory(. FILES)
-add_executable (basicTest ${FILES})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ./bin)
+
+add_executable (basicTest tests/basicTest.cpp)
 add_definitions("-g")
 add_definitions("-Wall")
 add_definitions("-std=c++11")
@@ -17,6 +18,7 @@ add_executable(tests ${SPECS})
 add_definitions("-g")
 add_definitions("-Wall")
 add_definitions("-std=c++11")
+
 
 target_link_libraries(basicTest GL)
 target_link_libraries(basicTest glfw)
