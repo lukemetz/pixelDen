@@ -6,6 +6,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 
+#include "Shader.h"
+#include "Program.h"
+
 //NIGHTMARE do not add comments CHANGE ME asap
 static std::string vertexShaderSource = "\
 #version 120\n\
@@ -25,37 +28,14 @@ void main(void)\n\
 }";
 
 
-GLuint makeShader(GLenum type, const std::string& source)
-{
-  GLuint shader = glCreateShader(type);
-  GLchar* rawSource = (GLchar*) source.c_str();
-  GLsizei size = source.size();
-  glShaderSource(shader, 1, (const GLchar**)&rawSource, &size);
-  glCompileShader(shader);
-
-  GLint shaderOk;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &shaderOk);
-  if (!shaderOk) {
-    std::cerr << "Failed compile shader" << std::endl;
-    GLint logSize;
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
-    char *logMsg = new char[logSize];
-    glGetShaderInfoLog(shader, logSize, NULL, logMsg);
-    std::cerr << logMsg << std::endl;
-    delete[] logMsg;
-    return shader;
-  }
-  return shader;
-}
-
 int main(void)
 {
     GLFWwindow* window;
-    
+
     /* Initialize the library */
     if(!glfwInit())
       return -1;
-    
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -68,12 +48,12 @@ int main(void)
         glfwTerminate();
         return -1;
     }
-    
+
 
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-    
+
     glewExperimental = GL_TRUE;
     /* Initialize extension loader once context up*/
     if(GLEW_OK != glewInit())
@@ -82,51 +62,18 @@ int main(void)
     std::cout << "VENDOR: " << glGetString(GL_VENDOR) << std::endl;
     std::cout << "RENDERER: " << glGetString(GL_RENDERER) << std::endl;
     std::cout << "VERSION: " << glGetString(GL_VERSION) << std::endl;
-    std::cout << "GLSL: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl; 
+    std::cout << "GLSL: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
     //Setup inputs
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
-    GLuint vShader = makeShader(GL_VERTEX_SHADER, vertexShaderSource);
-    GLuint fShader = makeShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+    Shader::Ptr vertexShader = createShaderFromSource(Shader::Type::Vertex, vertexShaderSource);
+    Shader::Ptr fragmentShader = createShaderFromSource(Shader::Type::Fragment, fragmentShaderSource);
 
-    GLuint program = glCreateProgram();
-    glAttachShader(program, vShader);
-    glAttachShader(program, fShader);
+    std::vector<Shader::Ptr> shaders{vertexShader, fragmentShader};
+    Program::Ptr program = createProgramWithShaders(shaders);
 
-
-    glLinkProgram(program);
-    
-    GLint shaderOk;
-    glGetProgramiv(program, GL_LINK_STATUS, &shaderOk);
-    if (!shaderOk) {
-      std::cerr << "Failed linking shader" << std::endl;
-      GLint logSize;
-      glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logSize);
-      char *logMsg = new char[logSize];
-      glGetProgramInfoLog(program, logSize, NULL, logMsg);
-      std::cerr << logMsg << std::endl;
-      delete[] logMsg;
-      return 0;
-    }
-    
-    GLuint shaders[4];
-    int count = 0;
-    glGetAttachedShaders(program, 4, &count, shaders);
-
-    GLint linked;
-    glGetProgramiv(program, GL_LINK_STATUS, &linked);
-    if (!linked)
-    {
-      std::cerr << "Shader program failed to link" << std::endl;
-      GLint logSize;
-      glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logSize);
-      char* logMsg = new char[logSize];
-      glGetProgramInfoLog(program, logSize, NULL, logMsg);
-      std::cerr << logMsg << std::endl;
-      delete[] logMsg;
-    }
 
     /*glValidateProgram(program);
     GLint validated;
@@ -142,7 +89,7 @@ int main(void)
       delete[] logMsg;
     }*/
 
-    
+
 
 
 
@@ -156,7 +103,7 @@ int main(void)
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
 
@@ -171,14 +118,14 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //clear depthbit here if depth on
 
-        glUseProgram(program);
-        GLuint iPosition = glGetAttribLocation(program, "iPosition");
+        glUseProgram(program->glProgram);
+        GLuint iPosition = glGetAttribLocation(program->glProgram, "iPosition");
         glEnableVertexAttribArray(iPosition);
         glVertexAttribPointer(iPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 
 
-        GLuint uModelView = glGetUniformLocation(program, "uModelView");
+        GLuint uModelView = glGetUniformLocation(program->glProgram, "uModelView");
 
         glm::mat4 projection = glm::perspective(45.0f, 4.0f/3.0f, 0.1f, 100.0f);
         glm::mat4 view = glm::lookAt(
@@ -191,7 +138,7 @@ int main(void)
         glm::mat4 modelView = projection * view * model;
 
         glUniformMatrix4fv(uModelView, 1, GL_FALSE, glm::value_ptr(modelView));
-        
+
 
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
