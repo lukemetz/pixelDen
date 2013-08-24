@@ -8,6 +8,7 @@
 
 #include "Shader.h"
 #include "Program.h"
+#include "Uniforms.h"
 
 //NIGHTMARE do not add comments CHANGE ME asap
 static std::string vertexShaderSource = "\
@@ -125,7 +126,6 @@ int main(void)
 
 
 
-        GLuint uModelView = glGetUniformLocation(program->glProgram, "uModelView");
 
         glm::mat4 projection = glm::perspective(45.0f, 4.0f/3.0f, 0.1f, 100.0f);
         glm::mat4 view = glm::lookAt(
@@ -137,12 +137,9 @@ int main(void)
 
         glm::mat4 modelView = projection * view * model;
 
-        glUniformMatrix4fv(uModelView, 1, GL_FALSE, glm::value_ptr(modelView));
+        setUniform(program, "uModelView", modelView);
 
-
-        glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
