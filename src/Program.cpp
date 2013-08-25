@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "VertexAttrib.h"
+
 bool programDidLink(GLint program, std::string * message) {
   GLint programStatus;
   glGetProgramiv(program, GL_LINK_STATUS, &programStatus);
@@ -17,11 +19,13 @@ bool programDidLink(GLint program, std::string * message) {
   return true;
 };
 
-
 Program::Ptr createProgramWithShaders(std::vector<Shader::Ptr> shaders)
 {
   Program::Ptr program = std::make_shared<Program>();
   program->glProgram = glCreateProgram();
+
+  setupVertexAttrib(program);
+
   for (Shader::Ptr shader : shaders) {
     glAttachShader(program->glProgram, shader->glShader);
   }

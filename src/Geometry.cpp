@@ -1,5 +1,18 @@
 #include "Geometry.h"
 
+#include "VertexAttrib.h"
+
+Geometry::Geometry()
+{
+  glGenVertexArrays(1, &glVertexArray);
+  glBindVertexArray(glVertexArray);
+
+  glGenBuffers(1, &glIndiceBuffer);
+  glGenBuffers(1, &glPositionBuffer);
+
+  glBindVertexArray(0);
+}
+
 Geometry::Ptr createGeometryFromFile(std::string fileName)
 {
   Geometry::Ptr geometry = std::make_shared<Geometry>();
@@ -11,11 +24,11 @@ Geometry::Ptr createGeometryFromFile(std::string fileName)
   file.read(intBuffer, sizeof(int));
   int numIndicies = *(int *)intBuffer;
 
-  geometry->indicies.reserve(numIndicies);
+  geometry->indices.reserve(numIndicies);
   for (int i=0; i < numIndicies; ++i) {
     file.read(intBuffer, sizeof(int));
     int ind = *(int *)intBuffer;
-    geometry->indicies.push_back(ind);
+    geometry->indices.push_back(ind);
   }
 
   file.read(intBuffer, sizeof(int));
@@ -49,4 +62,31 @@ Geometry::Ptr createGeometryFromFile(std::string fileName)
     geometry->normals.push_back(normZ);
   }
   return geometry;
+}
+
+void bindFloatBuffer(int index, GLuint glBuffer, const std::vector<float> data)
+{
+  glBindBuffer(GL_ARRAY_BUFFER, glBuffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * data.size(), data.data(), GL_STATIC_DRAW);
+
+  glEnableVertexAttribArray(VertexAttrib::iPosition);
+  GLenum vertexSize = 3;
+  bool isNormalized = GL_FALSE;
+  GLsizei stride = 0;
+  GLvoid * pointer = 0;
+  glVertexAttribPointer(index, vertexSize, GL_FLOAT, isNormalized, stride, pointer);
+}
+
+void Geometry::bindGlBuffers()
+{
+  glBindVertexArray(glVertexArray);
+
+  glBindBuffer(GL_ARRAY_BUFFER, glIndiceBuffer);
+  size_t indicesSize = sizeof(indices[0]) * indices.size();
+  glBufferData(GL_ARRAY_BUFFER, indicesSize, indices.data(), GL_STATIC_DRAW);
+
+  bindFloatBuffer(VertexAttrib::iPosition, glPositionBuffer, positions);
+  bindFloatBuffer(VertexAttrib::iNormal, glNormalBuffer, normals);
+
+  glBindVertexArray(0);
 }

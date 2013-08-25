@@ -9,6 +9,7 @@
 #include "Shader.h"
 #include "Program.h"
 #include "Uniforms.h"
+#include "Geometry.h"
 
 //NIGHTMARE do not add comments CHANGE ME asap
 static std::string vertexShaderSource = "\
@@ -93,17 +94,25 @@ int main(void)
 
 
 
+    Geometry::Ptr geometry = std::make_shared<Geometry>();
 
-    GLfloat vertices[] = {
+    geometry->positions = {
         1.0f, 1.0f, 0.f,
         -1.f, -1.f, 0.f,
-        1.f, -0.8f, 0.f
+        1.f, -0.8f, 0.f,
+        3.0f, 1.0f, 0.f,
+        -1.5f, -1.f, -1.f,
+        1.f, -1.9f, 3.f
     };
 
-    GLuint buffer;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    geometry->indices = {
+      1, 2, 3,
+      1, 4, 5
+    };
+
+    //geometry->positions.insert(geometry->positions.begin(), &vertices, &vertices + 9);
+
+    geometry->bindGlBuffers();
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
@@ -120,12 +129,8 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //clear depthbit here if depth on
 
         glUseProgram(program->glProgram);
-        GLuint iPosition = glGetAttribLocation(program->glProgram, "iPosition");
-        glEnableVertexAttribArray(iPosition);
-        glVertexAttribPointer(iPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-
-
+        glBindVertexArray(geometry->glVertexArray);
 
         glm::mat4 projection = glm::perspective(45.0f, 4.0f/3.0f, 0.1f, 100.0f);
         glm::mat4 view = glm::lookAt(
@@ -139,11 +144,9 @@ int main(void)
 
         setUniform(program, "uModelView", modelView);
 
-        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glDrawElements(GL_TRIANGLES, geometry->indices.size(), GL_UNSIGNED_INT, geometry->indices.data());
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        glDisableVertexAttribArray(iPosition);
+        glBindVertexArray(0);
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
         /* Poll for and process events */
