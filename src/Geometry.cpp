@@ -90,3 +90,10 @@ void Geometry::bindGlBuffers()
 
   glBindVertexArray(0);
 }
+
+void drawGeometry(Geometry::Ptr geometry)
+{
+  glBindVertexArray(geometry->glVertexArray);
+  glDrawElements(GL_TRIANGLES, geometry->indices.size(), GL_UNSIGNED_INT, geometry->indices.data());
+  glBindVertexArray(0);
+}

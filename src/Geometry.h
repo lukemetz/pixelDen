@@ -21,4 +21,4 @@ struct Geometry
 };
 
 Geometry::Ptr createGeometryFromFile(std::string fileName);
-
+void drawGeometry(Geometry::Ptr geometry);

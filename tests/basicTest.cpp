@@ -10,6 +10,8 @@
 #include "Program.h"
 #include "Uniforms.h"
 #include "Geometry.h"
+#include "Model.h"
+#include "Camera.h"
 
 //NIGHTMARE do not add comments CHANGE ME asap
 static std::string vertexShaderSource = "\
@@ -51,8 +53,6 @@ int main(void)
         return -1;
     }
 
-
-
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
@@ -76,41 +76,26 @@ int main(void)
     std::vector<Shader::Ptr> shaders{vertexShader, fragmentShader};
     Program::Ptr program = createProgramWithShaders(shaders);
 
-
-    /*glValidateProgram(program);
-    GLint validated;
-    if (!validated)
-    {
-      std::cerr << "Shader program failed to validate:" << validated << std::endl;
-      GLint logSize;
-      glGetProgramiv(program, GL_VALIDATE_STATUS, &logSize);
-      std::cout << logSize << std::endl;
-      char* logMsg = new char[logSize];
-      glGetProgramInfoLog(program, logSize, NULL, logMsg);
-      std::cerr << logMsg << std::endl;
-      delete[] logMsg;
-    }*/
-
-
-
-
     Geometry::Ptr geometry = std::make_shared<Geometry>();
 
     geometry->positions = {
         1.0f, 1.0f, 0.f,
         -1.f, -1.f, 0.f,
-        1.f, -0.8f, 0.f,
-        3.0f, 1.0f, 0.f,
-        -1.5f, -1.f, -1.f,
-        1.f, -1.9f, 3.f
+        1.f, -0.8f, 0.f
     };
 
     geometry->indices = {
-      1, 2, 3,
-      1, 4, 5
+      0, 1, 2,
     };
 
-    //geometry->positions.insert(geometry->positions.begin(), &vertices, &vertices + 9);
+    Model::Ptr model = createModel(geometry);
+    Camera::Ptr camera = createCamera();
+    camera->projection = glm::perspective(45.0f, 4.0f/3.0f, 0.1f, 100.0f);
+    camera->view = glm::lookAt(
+        glm::vec3(0,4,-4), //Position
+        glm::vec3(0,0,0), //Look at
+        glm::vec3(0,1,0) //up
+    );
 
     geometry->bindGlBuffers();
 
@@ -128,25 +113,8 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //clear depthbit here if depth on
 
-        glUseProgram(program->glProgram);
+        renderModelFromCamera(camera, model, program);
 
-        glBindVertexArray(geometry->glVertexArray);
-
-        glm::mat4 projection = glm::perspective(45.0f, 4.0f/3.0f, 0.1f, 100.0f);
-        glm::mat4 view = glm::lookAt(
-            glm::vec3(0,4,-4), //Position
-            glm::vec3(0,0,0), //Look at
-            glm::vec3(0,1,0) //up
-        );
-        glm::mat4 model(1.0f);
-
-        glm::mat4 modelView = projection * view * model;
-
-        setUniform(program, "uModelView", modelView);
-
-        glDrawElements(GL_TRIANGLES, geometry->indices.size(), GL_UNSIGNED_INT, geometry->indices.data());
-
-        glBindVertexArray(0);
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
         /* Poll for and process events */
