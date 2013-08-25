@@ -81,10 +81,6 @@ void Geometry::bindGlBuffers()
 {
   glBindVertexArray(glVertexArray);
 
-  glBindBuffer(GL_ARRAY_BUFFER, glIndiceBuffer);
-  size_t indicesSize = sizeof(indices[0]) * indices.size();
-  glBufferData(GL_ARRAY_BUFFER, indicesSize, indices.data(), GL_STATIC_DRAW);
-
   bindFloatBuffer(VertexAttrib::iPosition, glPositionBuffer, positions);
   bindFloatBuffer(VertexAttrib::iNormal, glNormalBuffer, normals);
 
