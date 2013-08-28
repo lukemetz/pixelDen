@@ -3,6 +3,8 @@
 #include <GL/glew.h>
 #include <vector>
 #include <memory>
+
+#define GLM_SWIZZLE
 #include <glm/glm.hpp>
 
 #include "Model.h"

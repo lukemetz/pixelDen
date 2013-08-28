@@ -12,8 +12,8 @@
 #include "Geometry.h"
 #include "Model.h"
 #include "Camera.h"
+#include "CameraControls.h"
 
-//NIGHTMARE do not add comments CHANGE ME asap
 static std::string vertexShaderSource = "\
 #version 120\n\
 in vec3 iPosition;\
@@ -31,6 +31,9 @@ void main(void)\n\
   oColor = vec4(1.0,1.0,0,1.0);\n\
 }";
 
+void key(GLFWwindow *w, int i, int b, int c, int z) {
+  std::cout << "OtheroneWorking!!! \n \n" << std::endl;
+};
 
 int main(void)
 {
@@ -106,19 +109,29 @@ int main(void)
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
-        int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
-        glViewport(0, 0, width, height);
+      int width, height;
+      glfwGetFramebufferSize(window, &width, &height);
+      glViewport(0, 0, width, height);
 
-        /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //clear depthbit here if depth on
+      float right = glfwGetKey(window, GLFW_KEY_D) == GLFW_RELEASE ? 0 : 1;
+      right += glfwGetKey(window, GLFW_KEY_A) == GLFW_RELEASE ? 0 :-1;
 
-        renderModelFromCamera(camera, model, program);
+      float in = glfwGetKey(window, GLFW_KEY_W) == GLFW_RELEASE ? 0 : 1;
+      in += glfwGetKey(window, GLFW_KEY_S) == GLFW_RELEASE ? 0 :-1;
 
-        /* Swap front and back buffers */
-        glfwSwapBuffers(window);
-        /* Poll for and process events */
-        glfwPollEvents();
+      float scale = 0.1;
+      CameraControls::panHorizontal(camera, right, scale);
+      CameraControls::panInto(camera, in, scale);
+
+      /* Render here */
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //clear depthbit here if depth on
+
+      renderModelFromCamera(camera, model, program);
+
+      /* Swap front and back buffers */
+      glfwSwapBuffers(window);
+      /* Poll for and process events */
+      glfwPollEvents();
     }
 
     glfwTerminate();
