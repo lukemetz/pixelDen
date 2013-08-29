@@ -49,7 +49,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(2*640, 2*480, "Hello World", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -95,7 +95,7 @@ int main(void)
     Camera::Ptr camera = createCamera();
     camera->projection = glm::perspective(45.0f, 4.0f/3.0f, 0.1f, 100.0f);
     camera->view = glm::lookAt(
-        glm::vec3(0,4,-4), //Position
+        glm::vec3(0,0,-4), //Position
         glm::vec3(0,0,0), //Look at
         glm::vec3(0,1,0) //up
     );
@@ -104,7 +104,6 @@ int main(void)
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
-
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -120,8 +119,16 @@ int main(void)
       in += glfwGetKey(window, GLFW_KEY_S) == GLFW_RELEASE ? 0 :-1;
 
       float scale = 0.1;
-      CameraControls::panHorizontal(camera, right, scale);
-      CameraControls::panInto(camera, in, scale);
+      //CameraControls::panHorizontal(camera, right, scale);
+      CameraControls::panInto(camera, in * scale);
+      CameraControls::panHorizontal(camera, -right * scale);
+
+      double newCursorX, newCursorY;
+      float rotateScale = .4f;
+      glfwGetCursorPos(window, &newCursorX, &newCursorY);
+      glfwSetCursorPos(window, width/2, height/2);
+      CameraControls::rotateHorizontal(camera, (newCursorX - width/2) * rotateScale);
+      CameraControls::rotateVertical(camera, (newCursorY - height/2) * rotateScale);
 
       /* Render here */
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //clear depthbit here if depth on
