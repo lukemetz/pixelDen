@@ -14,6 +14,8 @@
 #include "Camera.h"
 #include "CameraControls.h"
 
+#include "DebugOpengl.h"
+
 static std::string vertexShaderSource = "\
 #version 120\n\
 in vec3 iPosition;\
@@ -47,6 +49,7 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(2*640, 2*480, "Hello World", NULL, NULL);
@@ -63,6 +66,14 @@ int main(void)
     /* Initialize extension loader once context up*/
     if(GLEW_OK != glewInit())
       return -1;
+
+    if (glewIsSupported("GL_ARB_debug_output")) {
+        glDebugMessageCallback(DebugCallbackARB, stderr); // print debug output to stderr
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+    } else {
+      std::cerr << "Error detection not supported" << std::endl;
+      assert(0);
+    }
 
     std::cout << "VENDOR: " << glGetString(GL_VENDOR) << std::endl;
     std::cout << "RENDERER: " << glGetString(GL_RENDERER) << std::endl;
