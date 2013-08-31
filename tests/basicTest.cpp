@@ -17,25 +17,27 @@
 #include "DebugOpengl.h"
 
 static std::string vertexShaderSource = "\
-#version 120\n\
+#version 150\n\
 in vec3 iPosition;\
+in vec3 iNormal;\
+out vec3 normal;\
 uniform mat4 uModelView;\
 void main() \
 { \
   gl_Position = uModelView * vec4(iPosition, 1); \
+  normal = iNormal;\n\
 }";
 
 static std::string fragmentShaderSource = "\
 #version 150\n\
+in vec3 normal;\n\
+in vec3 iPosition;\n\
 out vec4 oColor;\n\
 void main(void)\n\
 {\n\
-  oColor = vec4(1.0,1.0,0,1.0);\n\
+  oColor = vec4(normal.xyz, 1);\n\
 }";
 
-void key(GLFWwindow *w, int i, int b, int c, int z) {
-  std::cout << "OtheroneWorking!!! \n \n" << std::endl;
-};
 
 int main(void)
 {
@@ -90,23 +92,13 @@ int main(void)
     std::vector<Shader::Ptr> shaders{vertexShader, fragmentShader};
     Program::Ptr program = createProgramWithShaders(shaders);
 
-    Geometry::Ptr geometry = std::make_shared<Geometry>();
-
-    geometry->positions = {
-        1.0f, 1.0f, 0.f,
-        -1.f, -1.f, 0.f,
-        1.f, -0.8f, 0.f
-    };
-
-    geometry->indices = {
-      0, 1, 2,
-    };
+    Geometry::Ptr geometry = createGeometryFromFile("./assets/perlin.geo");
 
     Model::Ptr model = createModel(geometry);
     Camera::Ptr camera = createCamera();
-    camera->projection = glm::perspective(45.0f, 4.0f/3.0f, 0.1f, 100.0f);
+    camera->projection = glm::perspective(45.0f, 4.0f/3.0f, 0.1f, 500.0f);
     camera->view = glm::lookAt(
-        glm::vec3(0,0,-4), //Position
+        glm::vec3(0,100,-100), //Position
         glm::vec3(0,0,0), //Look at
         glm::vec3(0,1,0) //up
     );
@@ -116,10 +108,14 @@ int main(void)
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
 
-    /* Loop until the user closes the window */
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    glfwSetCursorPos(window, width/2, height/2);
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+
     while (!glfwWindowShouldClose(window))
     {
-      int width, height;
       glfwGetFramebufferSize(window, &width, &height);
       glViewport(0, 0, width, height);
 
@@ -129,7 +125,7 @@ int main(void)
       float in = glfwGetKey(window, GLFW_KEY_W) == GLFW_RELEASE ? 0 : 1;
       in += glfwGetKey(window, GLFW_KEY_S) == GLFW_RELEASE ? 0 :-1;
 
-      float scale = 0.1;
+      float scale = 3;
       //CameraControls::panHorizontal(camera, right, scale);
       CameraControls::panInto(camera, in * scale);
       CameraControls::panHorizontal(camera, -right * scale);

@@ -2,13 +2,16 @@
 
 #include "VertexAttrib.h"
 
+#include <iostream>
+
 Geometry::Geometry()
 {
   glGenVertexArrays(1, &glVertexArray);
   glBindVertexArray(glVertexArray);
 
-  glGenBuffers(1, &glIndiceBuffer);
   glGenBuffers(1, &glPositionBuffer);
+  glGenBuffers(1, &glNormalBuffer);
+  glGenBuffers(1, &glIndiceBuffer);
 
   glBindVertexArray(0);
 }
@@ -32,8 +35,8 @@ Geometry::Ptr createGeometryFromFile(std::string fileName)
   }
 
   file.read(intBuffer, sizeof(int));
-  int numVerts = *(int *)intBuffer;
 
+  int numVerts = *(int *)intBuffer;
   geometry->positions.reserve(numVerts * 3);
   geometry->normals.reserve(numVerts * 3);
   for (int i=0; i < numVerts; ++i) {
@@ -69,7 +72,7 @@ void bindFloatBuffer(int index, GLuint glBuffer, const std::vector<float> data)
   glBindBuffer(GL_ARRAY_BUFFER, glBuffer);
   glBufferData(GL_ARRAY_BUFFER, sizeof(float) * data.size(), data.data(), GL_STATIC_DRAW);
 
-  glEnableVertexAttribArray(VertexAttrib::iPosition);
+  glEnableVertexAttribArray(index);
   GLenum vertexSize = 3;
   bool isNormalized = GL_FALSE;
   GLsizei stride = 0;
@@ -83,6 +86,8 @@ void Geometry::bindGlBuffers()
 
   bindFloatBuffer(VertexAttrib::iPosition, glPositionBuffer, positions);
   bindFloatBuffer(VertexAttrib::iNormal, glNormalBuffer, normals);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glIndiceBuffer);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), indices.data(), GL_STATIC_DRAW);
 
   glBindVertexArray(0);
 }
@@ -90,6 +95,6 @@ void Geometry::bindGlBuffers()
 void drawGeometry(Geometry::Ptr geometry)
 {
   glBindVertexArray(geometry->glVertexArray);
-  glDrawElements(GL_TRIANGLES, geometry->indices.size(), GL_UNSIGNED_INT, geometry->indices.data());
+  glDrawElements(GL_TRIANGLES, geometry->indices.size(), GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
 }
