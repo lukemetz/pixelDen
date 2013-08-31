@@ -13,7 +13,7 @@ go_bandit([](){
         AssertThat(geometry->positions.size(), Equals(9));
 
         std::vector<float> indices{0, 1, 2};
-        std::vector<float> positions{0, 1, 0, 1, 0, 0, .5, .5, 0};
+        std::vector<float> positions{0, 1, 0, 1, 0, 0, 0, 0, 0};
         std::vector<float> normals{1, 0, 0, 1, 0, 0, 0, 1, 0};
 
         AssertThat(geometry->indices, EqualsContainer(indices));

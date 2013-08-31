@@ -30,8 +30,8 @@ int main() {
   appendData<float>(&output, 0.0f);
   appendData<float>(&output, 0.0f);
 
-  appendData<float>(&output, 0.5f);
-  appendData<float>(&output, 0.5f);
+  appendData<float>(&output, 0.0f);
+  appendData<float>(&output, 0.0f);
   appendData<float>(&output, 0.0f);
 
   //Write normals
