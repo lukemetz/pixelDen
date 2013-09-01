@@ -21,23 +21,34 @@ static std::string vertexShaderSource = "\
 in vec3 iPosition;\
 in vec3 iNormal;\
 out vec3 normal;\
+out vec3 position;\
 uniform mat4 uModelView;\
 void main() \
 { \
   gl_Position = uModelView * vec4(iPosition, 1); \
   normal = iNormal;\n\
+  position = iPosition;\n\
 }";
 
 static std::string fragmentShaderSource = "\
 #version 150\n\
+struct Light \
+{ \
+  vec3 color; \
+  vec3 position;\
+  float intensity; \
+}; \
+uniform Light light;\
 in vec3 normal;\n\
-in vec3 iPosition;\n\
+in vec3 position; \n\
 out vec4 oColor;\n\
 void main(void)\n\
 {\n\
-  oColor = vec4(normal.xyz, 1);\n\
+  vec3 lightDir = light.position - position;\n\
+  lightDir = normalize(lightDir);\n\
+  float NdotL = max( dot(normal, lightDir), 0.0f );\n\
+  oColor = vec4(vec3(0.3f, 0.3f, 0.3f) * light.color * NdotL, 1);\n\
 }";
-
 
 int main(void)
 {
@@ -105,6 +116,8 @@ int main(void)
 
     geometry->bindGlBuffers();
 
+    Light::Ptr light = createLight(glm::vec3(0,10,0), glm::vec3(1, .5, .4), 1.0f);
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
 
@@ -142,6 +155,8 @@ int main(void)
 
       renderModelFromCamera(camera, model, program);
 
+      light->position.x += .1f;
+      setLightUniform(program, light);
       /* Swap front and back buffers */
       glfwSwapBuffers(window);
       /* Poll for and process events */
