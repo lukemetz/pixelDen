@@ -56,5 +56,7 @@ void DebugCallbackARB(GLenum source, GLenum type, GLuint id, GLenum severity,
     char finalMessage[256];
     FormatDebugOutputARB(finalMessage, 256, source, type, id, severity, message);
     fprintf(outFile, "%s\n", finalMessage);
-
+    if (severity == GL_DEBUG_SEVERITY_HIGH_ARB) {
+      exit(1);
+    }
 }
