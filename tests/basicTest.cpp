@@ -13,8 +13,10 @@
 #include "Model.h"
 #include "Camera.h"
 #include "CameraControls.h"
+#include "Texture.h"
 
 #include "DebugOpengl.h"
+
 
 static std::string vertexShaderSource = "\
 #version 150\n\
@@ -39,6 +41,7 @@ struct Light \
   float intensity; \
 }; \
 uniform Light light;\
+uniform sampler2D sampler;\
 in vec3 normal;\n\
 in vec3 position; \n\
 out vec4 oColor;\n\
@@ -48,6 +51,8 @@ void main(void)\n\
   lightDir = normalize(lightDir);\n\
   float NdotL = max( dot(normal, lightDir), 0.0f );\n\
   oColor = vec4(vec3(0.3f, 0.3f, 0.3f) * light.color * NdotL, 1);\n\
+  vec4 res = texture2D(sampler, position.xz/10);\n\
+  oColor = vec4(res.xyz, 1);\n\
 }";
 
 int main(void)
@@ -117,6 +122,10 @@ int main(void)
     geometry->bindGlBuffers();
 
     Light::Ptr light = createLight(glm::vec3(0,10,0), glm::vec3(1, .5, .4), 1.0f);
+
+    Texture::Ptr texture = createTextureFromFile("./tests/assets/texture.jpg");
+
+    setUniformTexture(program, "sampler", texture, 0);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
