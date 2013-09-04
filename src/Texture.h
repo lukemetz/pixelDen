@@ -16,3 +16,8 @@ struct Texture
 };
 
 Texture::Ptr createTextureFromFile(std::string file);
+
+//Internal functions
+GLint getGlColorType(fipImage image);
+GLint getGlBitsPerChannel(fipImage image);
+GLint getGlFormat(fipImage image);

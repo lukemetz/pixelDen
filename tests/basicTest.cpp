@@ -14,6 +14,7 @@
 #include "Camera.h"
 #include "CameraControls.h"
 #include "Texture.h"
+#include "TextureCube.h"
 
 #include "DebugOpengl.h"
 
@@ -42,6 +43,7 @@ struct Light \
 }; \
 uniform Light light;\
 uniform sampler2D sampler;\
+uniform samplerCube cube;\
 in vec3 normal;\n\
 in vec3 position; \n\
 out vec4 oColor;\n\
@@ -53,6 +55,7 @@ void main(void)\n\
   oColor = vec4(vec3(0.3f, 0.3f, 0.3f) * light.color * NdotL, 1);\n\
   vec4 res = texture2D(sampler, position.xz/10);\n\
   oColor = vec4(res.xyz, 1);\n\
+  oColor = texture(cube, normal);\n\
 }";
 
 int main(void)
@@ -135,6 +138,9 @@ int main(void)
     glfwSetCursorPos(window, width/2, height/2);
     glfwSwapBuffers(window);
     glfwPollEvents();
+
+    TextureCube::Ptr cube = createTextureCubeWithPrefix("./tests/assets/cube", "png");
+    setUniformTexture(program, "cube", texture, 0);
 
     while (!glfwWindowShouldClose(window))
     {
