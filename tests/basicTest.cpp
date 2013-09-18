@@ -89,7 +89,7 @@ int main(void)
       return -1;
 
     if (glewIsSupported("GL_ARB_debug_output")) {
-        glDebugMessageCallback(DebugCallbackARB, stderr); // print debug output to stderr
+        glDebugMessageCallbackARB(DebugCallbackARB, stderr); // print debug output to stderr
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
     } else {
       std::cerr << "Error detection not supported" << std::endl;
